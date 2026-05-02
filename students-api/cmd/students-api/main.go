@@ -13,6 +13,7 @@ import (
 
 	"github.com/shivang2003/students-api/internal/config"
 	"github.com/shivang2003/students-api/internal/http/handlers/student"
+	"github.com/shivang2003/students-api/storage/sqlite"
 )
 
 func main() {
@@ -21,6 +22,14 @@ func main() {
 	cfg := config.MustLoad()
 
 	//db setup
+
+	_, err := sqlite.New(cfg)
+
+	if err != nil {
+		log.Fatal("failed to initialize storage REASON: ", err.Error())
+	}
+
+	slog.Info("Storage initialized successfully", slog.String("env", cfg.Env))
 
 	//setup router
 	router := http.NewServeMux()
@@ -48,7 +57,7 @@ func main() {
 	go func() { //separate goroutine to start the server and listen for incoming requests which allows the main goroutine to listen for shutdown signals and perform graceful shutdown when needed
 		err := server.ListenAndServe() //this
 		if err != nil {
-			log.Fatal("failed to start server")
+			log.Fatal("failed to start server", err.Error())
 		}
 	}()
 
@@ -60,7 +69,7 @@ func main() {
 
 	defer cancel()
 
-	err := server.Shutdown(ctx)
+	err = server.Shutdown(ctx)
 
 	if err != nil {
 		slog.Error("failed to shutdown server", "error", err.Error())
