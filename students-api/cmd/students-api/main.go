@@ -23,7 +23,7 @@ func main() {
 
 	//db setup
 
-	_, err := sqlite.New(cfg)
+	storage, err := sqlite.New(cfg)
 
 	if err != nil {
 		log.Fatal("failed to initialize storage REASON: ", err.Error())
@@ -37,7 +37,7 @@ func main() {
 	//route apis
 	//dependency injection can be done here by passing the required dependencies to the handler functions
 
-	router.HandleFunc("POST /api/v1/students", student.New())
+	router.HandleFunc("POST /api/v1/students", student.New(storage))
 
 	//setup server
 	server := http.Server{
